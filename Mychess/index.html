@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>玄甲 · 新象棋战棋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="seal">玄</span>
+      <div>
+        <h1>玄甲战棋</h1>
+        <p>新象棋 · 能量 / 技能 / 堆叠压制</p>
+      </div>
+    </div>
+    <div class="turn-banner">
+      <span id="turn-side" class="side-tag red">红方</span>
+      <span id="turn-num" class="turn-num">回合 1</span>
+      <span class="king-hp"><i class="red"></i>帅 <b id="hp-red">30</b></span>
+      <span class="king-hp"><i class="black"></i>将 <b id="hp-black">30</b></span>
+    </div>
+    <div class="actions">
+      <button id="btn-help" class="ghost">规则</button>
+      <button id="btn-surrender" class="ghost">认输</button>
+      <button id="btn-new" class="solid">新对局</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="board-wrap">
+      <canvas id="board"></canvas>
+      <div id="variant-pick" class="variant-pick">
+        <span>领域改写为：</span>
+        <button data-v="mud" class="solid">泥沼</button>
+        <button data-v="wind" class="solid">疾风</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="card">
+        <h2>棋子详情</h2>
+        <div id="sel-panel"><div class="muted">点击己方棋子查看详情并行动</div></div>
+      </div>
+      <div class="card">
+        <h2>技能</h2>
+        <div id="skill-list" class="skill-list"><div class="muted">选中己方棋子以查看技能</div></div>
+      </div>
+      <div class="card grow">
+        <h2>战报</h2>
+        <div id="log" class="log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <div id="skill-broadcast" class="skill-broadcast" aria-hidden="true">
+    <div class="skill-flare"></div>
+    <div class="skill-card">
+      <div id="skill-broadcast-tier" class="skill-tier">SKILL</div>
+      <div id="skill-broadcast-name" class="skill-name">Skill</div>
+      <div id="skill-broadcast-meta" class="skill-meta"></div>
+    </div>
+  </div>
+
+  <!-- 规则弹窗 -->
+  <div id="help-modal" class="modal">
+    <div class="modal-box">
+      <button class="x" id="help-close">×</button>
+      <h2>玩法速览</h2>
+      <div class="help-body">
+        <p><b>棋盘</b>：16×12。红方在下、黑方在上，各自最后两行为<b>军营</b>（每回合多回1HP）。</p>
+        <p><b>地形</b>：四角<b class="rift">时空裂隙</b>（停留到自己下个回合可瞬移到另一空裂隙）、中央<b class="flow">能量洪流</b>（站上去能量翻倍，本方回合末受2真实伤害）。<b class="rift">泥沼</b>阻挡敌方进入/穿过，<b class="flow">疾风</b>让己方帅士在九宫、兵向前各 +1 步（均由象的奥义生成）。</p>
+        <p><b>回血</b>：每个棋子在<i>自己</i>行动方的回合末回复2HP（军营内+1，共3HP），不会在被攻击后立刻回血。</p>
+        <p><b>行动</b>：每回合点击一枚己方棋子，执行「移动 / 攻击」<i>或</i>「一个技能」，然后自动换手（双人同屏）。</p>
+        <p><b>战斗</b>：伤害 = max(1, 攻击 − 护甲)。若一击未杀死目标，攻击方压在目标上层形成<b>堆叠</b>，下层被压制（不能用技能、只能移动离开）。</p>
+        <p><b>能量</b>：移动 +10、造成伤害 +10、受伤 +5（每回合每子至多3次），满100可放奥义。</p>
+        <p><b>技能</b>：分微型 / 小 / 奥义三级，每个棋子各 3 个，已全部可用。<i>轻骑、校准、急令、伪装</i>为预备增益，施放后本子可继续移动/攻击；其余技能即为该回合行动。奥义需能量满 100，且每方有全局次数限制。</p>
+        <p><b>奥义</b>：末日裁决 / 献祭守护 / 领域改写 / 天翔龙闪 / 末日战车 / 轨道轰炸 / 末日降临 —— 扭转战局的大招，注意全局次数。</p>
+        <p><b>胜负</b>：击杀对方将帅；或回合结束时对方将帅处于被压制状态；或认输。</p>
+        <p><b>状态点</b>（棋子下方小圆点）：<span class="d blue"></span>护甲/隐匿 <span class="d orange"></span>激昂/无敌 <span class="d purple"></span>震慑 <span class="d white"></span>震颤 <span class="d red"></span>重伤。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算弹窗 -->
+  <div id="result-modal" class="modal">
+    <div class="modal-box center">
+      <div class="trophy">⚔</div>
+      <h2 id="result-text">胜利</h2>
+      <button id="result-again" class="solid big">再来一局</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
